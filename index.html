@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VALORANT Skin Rating & Community Reviews</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Tungsten / Montserrat / Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        valDark: '#0f1923',
+                        valDarker: '#080d12',
+                        valCard: '#172430',
+                        valRed: '#ff4655',
+                        valRedHover: '#e03e4d',
+                        valGold: '#ece8e1',
+                        valYellow: '#d1a450',
+                        tierSelect: '#5a9fe2',
+                        tierDeluxe: '#00b16a',
+                        tierPremium: '#d1548d',
+                        tierExclusive: '#f59e0b',
+                        tierUltra: '#ef4444'
+                    },
+                    fontFamily: {
+                        valTitle: ['Teko', 'sans-serif'],
+                        valBody: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f1923;
+            color: #ece8e1;
+            font-family: 'Montserrat', sans-serif;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255, 70, 85, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(209, 164, 80, 0.04) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        .val-cut-corner {
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+        }
+
+        .val-btn-cut {
+            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+        }
+
+        .val-card-glow:hover {
+            box-shadow: 0 0 20px rgba(255, 70, 85, 0.25);
+            border-color: rgba(255, 70, 85, 0.6);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080d12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ff4655;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 bg-valDarker/95 backdrop-blur border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('explore')">
+                <div class="w-10 h-10 bg-valRed flex items-center justify-center font-bold text-white text-2xl val-btn-cut shadow-lg">
+                    V
+                </div>
+                <div>
+                    <h1 class="font-valTitle text-3xl tracking-wider leading-none text-white uppercase">VALORANT <span class="text-valRed">SKIN HUB</span></h1>
+                    <p class="text-xs text-gray-400 font-semibold tracking-widest uppercase">Cộng Đồng Đánh Giá Skin</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="hidden md:flex space-x-2">
+                <button id="nav-explore" onclick="switchTab('explore')" class="px-5 py-2 font-bold uppercase text-sm tracking-wider border-b-2 border-valRed text-white flex items-center gap-2 transition">
+                    <i class="fa-solid fa-gun"></i> Tất Cả Skins
+                </button>
+                <button id="nav-leaderboard" onclick="switchTab('leaderboard')" class="px-5 py-2 font-bold uppercase text-sm tracking-wider border-b-2 border-transparent text-gray-400 hover:text-white flex items-center gap-2 transition">
+                    <i class="fa-solid fa-trophy text-valYellow"></i> BXH Xếp Hạng
+                </button>
+            </nav>
+
+            <!-- User Status / Stats Badge -->
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex flex-col text-right">
+                    <span class="text-xs text-gray-400 uppercase font-semibold">Skin Trong Kho</span>
+                    <span id="total-skins-count" class="font-bold text-valRed text-sm">0 Skins</span>
+                </div>
+                <button onclick="openAddSkinModal()" class="val-btn-cut bg-valRed hover:bg-valRedHover text-white px-4 py-2 font-bold uppercase text-xs tracking-widest flex items-center gap-2 transition shadow-lg">
+                    <i class="fa-solid fa-plus"></i> Thêm Skin
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Tabs -->
+        <div class="flex md:hidden border-t border-gray-800 bg-valDark">
+            <button id="nav-explore-m" onclick="switchTab('explore')" class="flex-1 py-3 text-center font-bold text-xs uppercase tracking-wider text-valRed border-b-2 border-valRed">
+                <i class="fa-solid fa-gun mr-1"></i> Skins
+            </button>
+            <button id="nav-leaderboard-m" onclick="switchTab('leaderboard')" class="flex-1 py-3 text-center font-bold text-xs uppercase tracking-wider text-gray-400">
+                <i class="fa-solid fa-trophy mr-1 text-valYellow"></i> Bảng Xếp Hạng
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- TAB 1: EXPLORE / SKINS GRID VIEW -->
+        <section id="tab-explore" class="space-y-6">
+
+            <!-- Controls: Search & Filters -->
+            <div class="bg-valCard p-4 sm:p-6 rounded-lg border border-gray-800 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+                    <!-- Search Input -->
+                    <div class="md:col-span-5 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="search-input" placeholder="Tìm kiếm tên skin (VD: Kuronami, Reaver, Prime...)" 
+                            class="w-full bg-valDark border border-gray-700 pl-11 pr-4 py-3 rounded text-sm text-white focus:outline-none focus:border-valRed transition placeholder-gray-500">
+                    </div>
+
+                    <!-- Weapon Filter -->
+                    <div class="md:col-span-3">
+                        <select id="weapon-filter" class="w-full bg-valDark border border-gray-700 px-4 py-3 rounded text-sm text-white focus:outline-none focus:border-valRed transition cursor-pointer">
+                            <option value="ALL">Tất cả vũ khí</option>
+                            <option value="Vandal">Vandal</option>
+                            <option value="Phantom">Phantom</option>
+                            <option value="Melee">Cận chiến (Melee)</option>
+                            <option value="Operator">Operator</option>
+                            <option value="Sheriff">Sheriff</option>
+                            <option value="Spectre">Spectre</option>
+                        </select>
+                    </div>
+
+                    <!-- Tier / Edition Filter -->
+                    <div class="md:col-span-2">
+                        <select id="tier-filter" class="w-full bg-valDark border border-gray-700 px-4 py-3 rounded text-sm text-white focus:outline-none focus:border-valRed transition cursor-pointer">
+                            <option value="ALL">Tất cả Cấp Độ</option>
+                            <option value="Ultra">Ultra Edition (Yellow)</option>
+                            <option value="Exclusive">Exclusive Edition (Pink)</option>
+                            <option value="Premium">Premium Edition (Gold/Red)</option>
+                            <option value="Deluxe">Deluxe Edition (Green)</option>
+                            <option value="Select">Select Edition (Blue)</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort By Filter -->
+                    <div class="md:col-span-2">
+                        <select id="sort-filter" class="w-full bg-valDark border border-gray-700 px-4 py-3 rounded text-sm text-white focus:outline-none focus:border-valRed transition cursor-pointer">
+                            <option value="rating-desc">Điểm: Cao -> Thấp</option>
+                            <option value="rating-asc">Điểm: Thấp -> Cao</option>
+                            <option value="reviews-desc">Nhiều đánh giá nhất</option>
+                            <option value="price-desc">Giá VP: Cao -> Thấp</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Active Filter Tags -->
+                <div id="filter-tags" class="flex flex-wrap items-center gap-2 pt-2 text-xs">
+                    <span class="text-gray-400 font-semibold">Lọc nhanh:</span>
+                    <button onclick="quickFilter('Vandal')" class="bg-valDark hover:bg-gray-800 border border-gray-700 text-gray-300 px-3 py-1 rounded-full transition">🔥 Vandals</button>
+                    <button onclick="quickFilter('Melee')" class="bg-valDark hover:bg-gray-800 border border-gray-700 text-gray-300 px-3 py-1 rounded-full transition">⚔️ Melee Knife</button>
+                    <button onclick="quickFilter('Exclusive')" class="bg-valDark hover:bg-gray-800 border border-gray-700 text-gray-300 px-3 py-1 rounded-full transition">⭐ Exclusive Tier</button>
+                    <button onclick="resetFilters()" class="text-valRed hover:underline ml-auto font-semibold cursor-pointer">Đặt lại bộ lọc</button>
+                </div>
+            </div>
+
+            <!-- Skins Grid -->
+            <div id="skins-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Content via JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden text-center py-16 bg-valCard rounded-lg border border-gray-800">
+                <i class="fa-solid fa-ghost text-5xl text-gray-600 mb-4"></i>
+                <h3 class="text-xl font-bold text-white mb-2">Không tìm thấy Skin phù hợp</h3>
+                <p class="text-gray-400 text-sm">Hãy thử thay đổi từ khóa hoặc bộ lọc của bạn.</p>
+            </div>
+        </section>
+
+        <!-- TAB 2: LEADERBOARD / TIER LIST VIEW -->
+        <section id="tab-leaderboard" class="space-y-6 hidden">
+            <div class="bg-valCard p-6 rounded-lg border border-gray-800">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <div>
+                        <h2 class="font-valTitle text-4xl text-white tracking-wide">BẢNG XẾP HẠNG SKIN ĐƯỢC ĐÁNH GIÁ CAO NHẤT</h2>
+                        <p class="text-sm text-gray-400">Xếp hạng dựa trên điểm số trung bình thực tế từ cộng đồng người chơi Valorant.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs uppercase text-gray-400 font-semibold">Top Danh Mục:</span>
+                        <select id="leaderboard-category" class="bg-valDark border border-gray-700 px-3 py-1.5 rounded text-sm text-white focus:outline-none focus:border-valRed">
+                            <option value="ALL">Tất cả vũ khí</option>
+                            <option value="Vandal">Vandal Top</option>
+                            <option value="Phantom">Phantom Top</option>
+                            <option value="Melee">Melee Top</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Leaderboard Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-800 text-xs text-gray-400 uppercase font-semibold">
+                                <th class="py-4 px-4 text-center">Hạng</th>
+                                <th class="py-4 px-4">Skin</th>
+                                <th class="py-4 px-4">Loại Vũ Khí</th>
+                                <th class="py-4 px-4">Phân Cấp (Tier)</th>
+                                <th class="py-4 px-4 text-center">Chi Tiết Điểm (VFX/SFX/Finish)</th>
+                                <th class="py-4 px-4 text-center">Giá VP</th>
+                                <th class="py-4 px-4 text-right">Tổng Điểm</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-tbody" class="divide-y divide-gray-800 text-sm">
+                            <!-- Dynamic Content via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: SKIN DETAIL & REVIEWS -->
+    <div id="skin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="bg-valCard border border-gray-700 w-full max-w-4xl rounded-lg overflow-hidden shadow-2xl my-8 relative flex flex-col max-h-[90vh]">
+            <!-- Close Button -->
+            <button onclick="closeSkinModal()" class="absolute top-4 right-4 z-10 w-9 h-9 bg-valDark/80 hover:bg-valRed text-white rounded-full flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Modal Header / Banner -->
+            <div class="relative bg-valDarker p-6 border-b border-gray-800 flex flex-col md:flex-row items-center gap-6">
+                <div class="w-full md:w-1/2 flex justify-center items-center p-4 bg-valDark/50 rounded border border-gray-800 relative">
+                    <img id="modal-skin-image" src="" alt="Skin Preview" class="max-h-56 object-contain filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.8)]">
+                    <span id="modal-skin-tier" class="absolute top-3 left-3 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider text-white">TIER</span>
+                </div>
+
+                <div class="w-full md:w-1/2 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span id="modal-skin-weapon" class="text-xs uppercase bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-semibold">WEAPON</span>
+                        <span id="modal-skin-price" class="text-xs font-bold text-valYellow flex items-center gap-1">
+                            <i class="fa-solid fa-coins"></i> 2,175 VP
+                        </span>
+                    </div>
+
+                    <h2 id="modal-skin-name" class="font-valTitle text-4xl text-white tracking-wide leading-none">SKIN NAME</h2>
+
+                    <!-- Main Rating Display -->
+                    <div class="flex items-baseline gap-3 bg-valDark p-3 rounded border border-gray-800">
+                        <span id="modal-skin-rating-num" class="text-3xl font-black text-valRed">4.8</span>
+                        <div>
+                            <div id="modal-skin-rating-stars" class="text-valYellow text-sm">
+                                <!-- Stars JS -->
+                            </div>
+                            <span id="modal-skin-reviews-count" class="text-xs text-gray-400">(Dựa trên 24 đánh giá từ gamer)</span>
+                        </div>
+                    </div>
+
+                    <!-- Criteria Ratings Breakdown -->
+                    <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                        <div class="bg-valDark/60 p-2 rounded">
+                            <span class="text-gray-400 block">Hiệu Ứng VFX</span>
+                            <span id="modal-vfx-score" class="font-bold text-white text-sm">4.9 / 5</span>
+                        </div>
+                        <div class="bg-valDark/60 p-2 rounded">
+                            <span class="text-gray-400 block">Âm Thanh SFX</span>
+                            <span id="modal-sfx-score" class="font-bold text-white text-sm">4.8 / 5</span>
+                        </div>
+                        <div class="bg-valDark/60 p-2 rounded">
+                            <span class="text-gray-400 block">Kết Liễu (Finisher)</span>
+                            <span id="modal-finisher-score" class="font-bold text-white text-sm">5.0 / 5</span>
+                        </div>
+                        <div class="bg-valDark/60 p-2 rounded">
+                            <span class="text-gray-400 block">Đáng Tiền (Value)</span>
+                            <span id="modal-value-score" class="font-bold text-white text-sm">4.5 / 5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Content (Reviews & Add Review Form) -->
+            <div class="p-6 overflow-y-auto space-y-8 flex-1">
+
+                <!-- Submit Review Form Section -->
+                <div class="bg-valDark p-5 rounded-lg border border-gray-800 space-y-4">
+                    <h3 class="font-valTitle text-2xl text-white tracking-wide uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-valRed"></i> Gửi Đánh Giá Của Bạn
+                    </h3>
+
+                    <form id="review-form" onsubmit="handleReviewSubmit(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs uppercase text-gray-400 font-semibold mb-1">Tên Gamer / Riot ID *</label>
+                                <input type="text" id="reviewer-name" required placeholder="Ví dụ: TenZ#NA1" 
+                                    class="w-full bg-valCard border border-gray-700 px-3 py-2 rounded text-sm text-white focus:outline-none focus:border-valRed">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase text-gray-400 font-semibold mb-1">Chấm Điểm Tổng Thể *</label>
+                                <select id="reviewer-rating" class="w-full bg-valCard border border-gray-700 px-3 py-2 rounded text-sm text-white focus:outline-none focus:border-valRed">
+                                    <option value="5">⭐⭐⭐⭐⭐ (5.0 - Siêu Phẩm)</option>
+                                    <option value="4">⭐⭐⭐⭐ (4.0 - Rất Đáng Mua)</option>
+                                    <option value="3">⭐⭐⭐ (3.0 - Bình Thường)</option>
+                                    <option value="2">⭐⭐ (2.0 - Tạm Được)</option>
+                                    <option value="1">⭐ (1.0 - Thất Vọng / Phí VP)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Sub Criteria Sliders -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-valCard p-3 rounded text-xs">
+                            <div>
+                                <label class="text-gray-400 block mb-1">VFX: <span id="vfx-val" class="text-valRed font-bold">5</span>/5</label>
+                                <input type="range" id="input-vfx" min="1" max="5" value="5" class="w-full accent-valRed" oninput="document.getElementById('vfx-val').innerText=this.value">
+                            </div>
+                            <div>
+                                <label class="text-gray-400 block mb-1">SFX: <span id="sfx-val" class="text-valRed font-bold">5</span>/5</label>
+                                <input type="range" id="input-sfx" min="1" max="5" value="5" class="w-full accent-valRed" oninput="document.getElementById('sfx-val').innerText=this.value">
+                            </div>
+                            <div>
+                                <label class="text-gray-400 block mb-1">Finisher: <span id="fin-val" class="text-valRed font-bold">5</span>/5</label>
+                                <input type="range" id="input-finisher" min="1" max="5" value="5" class="w-full accent-valRed" oninput="document.getElementById('fin-val').innerText=this.value">
+                            </div>
+                            <div>
+                                <label class="text-gray-400 block mb-1">Giá/VP: <span id="val-val" class="text-valRed font-bold">4</span>/5</label>
+                                <input type="range" id="input-value" min="1" max="5" value="4" class="w-full accent-valRed" oninput="document.getElementById('val-val').innerText=this.value">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs uppercase text-gray-400 font-semibold mb-1">Nhận Xét Chi Tiết *</label>
+                            <textarea id="reviewer-comment" rows="3" required placeholder="Nêu cảm nhận về cảm giác bắn, tiếng súng, hiệu ứng kết liễu hoặc biến thể màu sắc..."
+                                class="w-full bg-valCard border border-gray-700 px-3 py-2 rounded text-sm text-white focus:outline-none focus:border-valRed"></textarea>
+                        </div>
+
+                        <button type="submit" class="val-btn-cut bg-valRed hover:bg-valRedHover text-white px-6 py-2 font-bold uppercase text-xs tracking-wider transition">
+                            Đăng Đánh Giá
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Community Reviews List -->
+                <div class="space-y-4">
+                    <h3 class="font-valTitle text-2xl text-white tracking-wide uppercase flex items-center justify-between">
+                        <span><i class="fa-solid fa-comments text-valRed mr-2"></i> Đánh Giá Từ Cộng Đồng</span>
+                        <span id="modal-reviews-count-header" class="text-sm font-sans text-gray-400 font-normal">0 Nhận xét</span>
+                    </h3>
+
+                    <div id="reviews-container" class="space-y-3">
+                        <!-- Dynamic Reviews List JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD NEW SKIN -->
+    <div id="add-skin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-valCard border border-gray-700 w-full max-w-lg rounded-lg overflow-hidden shadow-2xl relative p-6">
+            <button onclick="closeAddSkinModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h2 class="font-valTitle text-3xl text-white uppercase mb-4">Thêm Skin Mới Vào Hub</h2>
+
+            <form onsubmit="handleAddNewSkin(event)" class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-xs uppercase text-gray-400 mb-1">Tên Skin *</label>
+                    <input type="text" id="new-skin-name" required placeholder="VD: Mystbloom Vandal" class="w-full bg-valDark border border-gray-700 px-3 py-2 rounded text-white focus:outline-none focus:border-valRed">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs uppercase text-gray-400 mb-1">Loại Vũ Khí</label>
+                        <select id="new-skin-weapon" class="w-full bg-valDark border border-gray-700 px-3 py-2 rounded text-white focus:outline-none focus:border-valRed">
+                            <option value="Vandal">Vandal</option>
+                            <option value="Phantom">Phantom</option>
+                            <option value="Melee">Melee</option>
+                            <option value="Operator">Operator</option>
+                            <option value="Sheriff">Sheriff</option>
+                            <option value="Spectre">Spectre</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase text-gray-400 mb-1">Cấp Độ (Tier)</label>
+                        <select id="new-skin-tier" class="w-full bg-valDark border border-gray-700 px-3 py-2 rounded text-white focus:outline-none focus:border-valRed">
+                            <option value="Exclusive">Exclusive Tier (Pink)</option>
+                            <option value="Ultra">Ultra Tier (Yellow)</option>
+                            <option value="Premium">Premium Tier (Gold)</option>
+                            <option value="Deluxe">Deluxe Tier (Green)</option>
+                            <option value="Select">Select Tier (Blue)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs uppercase text-gray-400 mb-1">Giá VP (Valorant Points)</label>
+                        <input type="number" id="new-skin-price" required value="2175" class="w-full bg-valDark border border-gray-700 px-3 py-2 rounded text-white focus:outline-none focus:border-valRed">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase text-gray-400 mb-1">URL Hình Ảnh Skin (Tùy chọn)</label>
+                        <input type="url" id="new-skin-image" placeholder="https://..." class="w-full bg-valDark border border-gray-700 px-3 py-2 rounded text-white focus:outline-none focus:border-valRed">
+                    </div>
+                </div>
+                <button type="submit" class="w-full val-btn-cut bg-valRed hover:bg-valRedHover text-white py-2.5 font-bold uppercase tracking-wider transition mt-2">
+                    Xác Nhận Thêm Skin
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-valDarker border-t border-gray-800 py-6 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>Valorant Skin Review Hub là ứng dụng độc lập dành cho cộng đồng người chơi Valorant.</p>
+            <p class="mt-1">Valorant và các hình ảnh liên quan thuộc bản quyền của Riot Games, Inc.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Tier Color Mapping Helpers
+        const TIER_COLORS = {
+            Ultra: { bg: 'bg-tierUltra', text: 'text-amber-300', border: 'border-amber-400', label: 'Ultra Edition' },
+            Exclusive: { bg: 'bg-tierExclusive', text: 'text-pink-400', border: 'border-pink-500', label: 'Exclusive Edition' },
+            Premium: { bg: 'bg-amber-600', text: 'text-yellow-400', border: 'border-yellow-500', label: 'Premium Edition' },
+            Deluxe: { bg: 'bg-tierDeluxe', text: 'text-emerald-400', border: 'border-emerald-500', label: 'Deluxe Edition' },
+            Select: { bg: 'bg-tierSelect', text: 'text-blue-400', border: 'border-blue-500', label: 'Select Edition' }
+        };
+
+        // Initial Pre-loaded Valorant Skins Dataset
+        let skinsData = [
+            {
+                id: 'kuronami-vandal',
+                name: 'Kuronami Vandal',
+                weapon: 'Vandal',
+                tier: 'Exclusive',
+                price: 2375,
+                image: 'https://images.contentstack.io/v3/assets/bltb6540380da7ba7e4/blt804f32e290f67822/6598506eb6280b001b9caeb4/Kuronami_Vandal.png',
+                ratings: { vfx: 4.9, sfx: 5.0, finisher: 5.0, value: 4.6 },
+                reviews: [
+                    { name: 'TenZ_Fan', score: 5, date: '2 giờ trước', comment: 'Tiếng thay đạn và âm thanh headshot cực kỳ đầm tai. Finisher gọi mưa bão ảo diệu nhất game!' },
+                    { name: 'AimGod99', score: 5, date: '1 ngày trước', comment: 'Cảm giác đạn bay thẳng hơn hẳn các skin khác. Biến thể màu đen tím cực ngầu.' }
+                ]
+            },
+            {
+                id: 'reaver-vandal',
+                name: 'Reaver Vandal',
+                weapon: 'Vandal',
+                tier: 'Premium',
+                price: 1775,
+                image: 'https://images.contentstack.io/v3/assets/bltb6540380da7ba7e4/blt4bf61c1626fdf21f/61f9d501dbf6377e8a9391ab/Reaver_Vandal.png',
+                ratings: { vfx: 4.8, sfx: 4.9, finisher: 4.9, value: 4.9 },
+                reviews: [
+                    { name: 'VandalEnjoyer', score: 5, date: '3 ngày trước', comment: 'Skin quốc dân không bao giờ lỗi thời. Tiếng hô vang khi kill cực kỳ uy lực.' },
+                    { name: 'NguyenVanA', score: 4, date: '5 ngày trước', comment: 'Rất đáng mua trong tầm giá 1775 VP.' }
+                ]
+            },
+            {
+                id: 'prime-vandal',
+                name: 'Prime Vandal',
+                weapon: 'Vandal',
+                tier: 'Premium',
+                price: 1775,
+                image: 'https://images.contentstack.io/v3/assets/bltb6540380da7ba7e4/blt223e710b80f93cb7/5ee133e9b119a0718d7f02d4/Prime_Vandal.png',
+                ratings: { vfx: 4.7, sfx: 4.8, finisher: 4.6, value: 5.0 },
+                reviews: [
+                    { name: 'LaserShooter', score: 5, date: '1 tuần trước', comment: 'Thay đạn bắn bằng năng lượng cực mượt, giảm giật cảm giác cực rõ!' }
+                ]
+            },
+            {
+                id: 'elderflame-vandal',
+                name: 'Elderflame Vandal',
+                weapon: 'Vandal',
+                tier: 'Ultra',
+                price: 2475,
+                image: 'https://images.contentstack.io/v3/assets/bltb6540380da7ba7e4/blt4bcce26715b94878/5f0775a6c37ea4727181c0db/Elderflame_Vandal.png',
+                ratings: { vfx: 5.0, sfx: 4.6, finisher: 4.8, value: 3.8 },
+                reviews: [
+                    { name: 'DragonMaster', score: 4, date: '4 ngày trước', comment: 'Rồng sống động đỉnh cao nhưng đôi khi hơi che tầm nhìn một chút.' }
+                ]
+            },
+            {
+                id: 'kuronami-no-yaiba',
+                name: 'Kuronami no Yaiba (Kama)',
+                weapon: 'Melee',
+                tier: 'Exclusive',
+                price: 5350,
+                image: 'https://images.contentstack.io/v3/assets/bltb6540380da7ba7e4/blt978dbba3819e0ff9/6598506ea4a485001bd3664d/Kuronami_no_Yaiba.png',
+                ratings: { vfx: 5.0, sfx: 4.9, finisher: 5.0, value: 4.3 },
+                reviews: [
+                    { name: 'NinjaBlade', score: 5, date: 'Hôm qua', comment: 'Múa xích quạt siêu đẹp, đỉnh cao skin cận chiến!' }
+                ]
+            },
+            {
+                id: 'glitchpop-phantom',
+                name: 'Glitchpop Phantom',
+                weapon: 'Phantom',
+                tier: 'Exclusive',
+                price: 2175,
+                image: 'https://images.contentstack.io/v3/assets/bltb6540380da7ba7e4/bltbc33a697116743b1/601878d6fa70f80ec4a9dcfe/Glitchpop_Phantom.png',
+                ratings: { vfx: 4.8, sfx: 4.7, finisher: 4.7, value: 4.4 },
+                reviews: [
+                    { name: 'CyberGamer', score: 5, date: '2 ngày trước', comment: 'Hiệu ứng Neon Cyberpunk cực kỳ bắt mắt.' }
+                ]
+            },
+            {
+                id: 'rgx-11z-blade',
+                name: 'RGX 11z Pro Blade',
+                weapon: 'Melee',
+                tier: 'Exclusive',
+                price: 4350,
+                image: 'https://images.contentstack.io/v3/assets/bltb6540380da7ba7e4/blt6d5f714ebfe0d12e/615ca944d1565b0f4ef5162a/RGX_11z_Pro_Blade.png',
+                ratings: { vfx: 4.9, sfx: 4.8, finisher: 4.8, value: 4.5 },
+                reviews: [
+                    { name: 'RGB_God', score: 5, date: '6 ngày trước', comment: 'Kiếm dài đổi màu LED cực ngầu khi kiểm tra vũ khí.' }
+                ]
+            },
+            {
+                id: 'mystbloom-kunai',
+                name: 'Mystbloom Kunai',
+                weapon: 'Melee',
+                tier: 'Exclusive',
+                price: 4350,
+                image: 'https://images.contentstack.io/v3/assets/bltb6540380da7ba7e4/blt6b2e3135b440409a/66300438cf398114682054ff/Mystbloom_Kunai.png',
+                ratings: { vfx: 4.9, sfx: 4.8, finisher: 4.9, value: 4.7 },
+                reviews: [
+                    { name: 'SakuraVibe', score: 5, date: '3 ngày trước', comment: 'Hoa hoa anh đào nở khi múa dao siêu nghệ thuật.' }
+                ]
+            },
+            {
+                id: 'protocol-781a-sheriff',
+                name: 'Protocol 781-A Sheriff',
+                weapon: 'Sheriff',
+                tier: 'Ultra',
+                price: 2475,
+                image: 'https://images.contentstack.io/v3/assets/bltb6540380da7ba7e4/bltb5dfa0ad89fa69ec/61d76472251322055ca13bd2/Protocol_781-A_Sheriff.png',
+                ratings: { vfx: 4.9, sfx: 5.0, finisher: 4.8, value: 4.2 },
+                reviews: [
+                    { name: 'RoboCop', score: 5, date: '1 tuần trước', comment: 'Skin duy nhất biết nói giọng trí tuệ nhân tạo (AI)!' }
+                ]
+            }
+        ];
+
+        let activeModalSkinId = null;
+
+        // Calculate average overall rating for a skin
+        function getOverallRating(skin) {
+            if (skin.reviews.length === 0) {
+                const r = skin.ratings;
+                return ((r.vfx + r.sfx + r.finisher + r.value) / 4).toFixed(1);
+            }
+            const sum = skin.reviews.reduce((acc, rev) => acc + Number(rev.score), 0);
+            return (sum / skin.reviews.length).toFixed(1);
+        }
+
+        // Render Stars Helper
+        function renderStarsHtml(ratingNum) {
+            const num = parseFloat(ratingNum);
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                if (num >= i) {
+                    html += '<i class="fa-solid fa-star"></i>';
+                } else if (num >= i - 0.5) {
+                    html += '<i class="fa-solid fa-star-half-stroke"></i>';
+                } else {
+                    html += '<i class="fa-regular fa-star text-gray-600"></i>';
+                }
+            }
+            return html;
+        }
+
+        // Render Skins Grid
+        function renderSkins() {
+            const grid = document.getElementById('skins-grid');
+            const emptyState = document.getElementById('empty-state');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+            const weaponVal = document.getElementById('weapon-filter').value;
+            const tierVal = document.getElementById('tier-filter').value;
+            const sortVal = document.getElementById('sort-filter').value;
+
+            // Update Total Count Badge
+            document.getElementById('total-skins-count').innerText = `${skinsData.length} Skins`;
+
+            // Filter Logic
+            let filtered = skinsData.filter(skin => {
+                const matchSearch = skin.name.toLowerCase().includes(searchVal) || skin.weapon.toLowerCase().includes(searchVal);
+                const matchWeapon = weaponVal === 'ALL' || skin.weapon === weaponVal;
+                const matchTier = tierVal === 'ALL' || skin.tier === tierVal;
+                return matchSearch && matchWeapon && matchTier;
+            });
+
+            // Sorting Logic
+            filtered.sort((a, b) => {
+                const ratingA = parseFloat(getOverallRating(a));
+                const ratingB = parseFloat(getOverallRating(b));
+                if (sortVal === 'rating-desc') return ratingB - ratingA;
+                if (sortVal === 'rating-asc') return ratingA - ratingB;
+                if (sortVal === 'reviews-desc') return b.reviews.length - a.reviews.length;
+                if (sortVal === 'price-desc') return b.price - a.price;
+                return 0;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            grid.innerHTML = filtered.map(skin => {
+                const tierInfo = TIER_COLORS[skin.tier] || TIER_COLORS.Premium;
+                const overallRating = getOverallRating(skin);
+                const fallbackImg = `https://placehold.co/600x300/172430/ece8e1?text=${encodeURIComponent(skin.name)}`;
+
+                return `
+                    <div class="bg-valCard border border-gray-800 rounded-lg overflow-hidden val-cut-corner val-card-glow transition duration-300 flex flex-col justify-between group">
+                        
+                        <!-- Card Top Info Header -->
+                        <div class="p-4 border-b border-gray-800/60 flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase ${tierInfo.text} flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full ${tierInfo.bg}"></span> ${skin.tier}
+                            </span>
+                            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider bg-valDark px-2 py-0.5 rounded border border-gray-800">
+                                ${skin.weapon}
+                            </span>
+                        </div>
+
+                        <!-- Skin Image Preview Area -->
+                        <div class="p-6 flex items-center justify-center bg-gradient-to-b from-transparent to-valDark/40 min-h-[160px] relative overflow-hidden">
+                            <img src="${skin.image}" alt="${skin.name}" 
+                                onerror="this.src='${fallbackImg}'"
+                                class="max-h-32 object-contain group-hover:scale-105 transition duration-300 filter drop-shadow-[0_8px_8px_rgba(0,0,0,0.7)]">
+                        </div>
+
+                        <!-- Card Details Footer -->
+                        <div class="p-4 bg-valCard/80 space-y-3">
+                            <h3 class="font-valTitle text-2xl text-white tracking-wide leading-none group-hover:text-valRed transition truncate">
+                                ${skin.name}
+                            </h3>
+
+                            <div class="flex items-center justify-between">
+                                <!-- Rating Stars -->
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl font-extrabold text-valRed">${overallRating}</span>
+                                    <div class="text-valYellow text-xs">
+                                        ${renderStarsHtml(overallRating)}
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-400">
+                                    <i class="fa-solid fa-comment mr-1"></i>${skin.reviews.length}
+                                </span>
+                            </div>
+
+                            <!-- Action Button -->
+                            <button onclick="openSkinModal('${skin.id}')" 
+                                class="w-full val-btn-cut bg-valDark hover:bg-valRed text-gray-200 hover:text-white py-2 px-3 font-bold uppercase text-xs tracking-wider border border-gray-700 hover:border-valRed transition flex items-center justify-center gap-2">
+                                <span>Đánh giá & Chi tiết</span>
+                                <i class="fa-solid fa-arrow-right text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Leaderboard / Tier List View
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboard-tbody');
+            const category = document.getElementById('leaderboard-category').value;
+
+            let filtered = skinsData.filter(s => category === 'ALL' || s.weapon === category);
+            
+            // Sort by average rating descending
+            filtered.sort((a, b) => parseFloat(getOverallRating(b)) - parseFloat(getOverallRating(a)));
+
+            tbody.innerHTML = filtered.map((skin, idx) => {
+                const rating = getOverallRating(skin);
+                const tierInfo = TIER_COLORS[skin.tier] || TIER_COLORS.Premium;
+                let rankBadge = `<span class="font-bold text-gray-400">#${idx + 1}</span>`;
+
+                if (idx === 0) rankBadge = `<span class="w-7 h-7 bg-valYellow text-valDark font-extrabold rounded-full inline-flex items-center justify-center shadow">1</span>`;
+                if (idx === 1) rankBadge = `<span class="w-7 h-7 bg-slate-300 text-valDark font-extrabold rounded-full inline-flex items-center justify-center shadow">2</span>`;
+                if (idx === 2) rankBadge = `<span class="w-7 h-7 bg-amber-700 text-white font-extrabold rounded-full inline-flex items-center justify-center shadow">3</span>`;
+
+                return `
+                    <tr class="hover:bg-valDark/50 transition cursor-pointer" onclick="openSkinModal('${skin.id}')">
+                        <td class="py-3 px-4 text-center">${rankBadge}</td>
+                        <td class="py-3 px-4 flex items-center gap-3">
+                            <img src="${skin.image}" class="w-12 h-8 object-contain" alt="">
+                            <span class="font-bold text-white">${skin.name}</span>
+                        </td>
+                        <td class="py-3 px-4 text-gray-300">${skin.weapon}</td>
+                        <td class="py-3 px-4">
+                            <span class="text-xs font-semibold ${tierInfo.text}">${skin.tier}</span>
+                        </td>
+                        <td class="py-3 px-4 text-center text-xs text-gray-400">
+                            VFX: ${skin.ratings.vfx} | SFX: ${skin.ratings.sfx} | Finish: ${skin.ratings.finisher}
+                        </td>
+                        <td class="py-3 px-4 text-center font-semibold text-valYellow">${skin.price} VP</td>
+                        <td class="py-3 px-4 text-right font-black text-valRed text-lg">${rating} / 5</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Open Skin Detail Modal
+        function openSkinModal(skinId) {
+            const skin = skinsData.find(s => s.id === skinId);
+            if (!skin) return;
+
+            activeModalSkinId = skinId;
+            const tierInfo = TIER_COLORS[skin.tier] || TIER_COLORS.Premium;
+            const overallRating = getOverallRating(skin);
+
+            document.getElementById('modal-skin-name').innerText = skin.name;
+            document.getElementById('modal-skin-image').src = skin.image;
+            document.getElementById('modal-skin-weapon').innerText = skin.weapon;
+            document.getElementById('modal-skin-price').innerHTML = `<i class="fa-solid fa-coins"></i> ${skin.price} VP`;
+            
+            // Tier Badge Styling
+            const tierEl = document.getElementById('modal-skin-tier');
+            tierEl.innerText = skin.tier;
+            tierEl.className = `absolute top-3 left-3 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider text-white ${tierInfo.bg}`;
+
+            // Rating Numbers & Breakdown
+            document.getElementById('modal-skin-rating-num').innerText = overallRating;
+            document.getElementById('modal-skin-rating-stars').innerHTML = renderStarsHtml(overallRating);
+            document.getElementById('modal-skin-reviews-count').innerText = `(Dựa trên ${skin.reviews.length} đánh giá từ cộng đồng)`;
+
+            document.getElementById('modal-vfx-score').innerText = `${skin.ratings.vfx} / 5`;
+            document.getElementById('modal-sfx-score').innerText = `${skin.ratings.sfx} / 5`;
+            document.getElementById('modal-finisher-score').innerText = `${skin.ratings.finisher} / 5`;
+            document.getElementById('modal-value-score').innerText = `${skin.ratings.value} / 5`;
+
+            // Render Active Reviews List
+            renderModalReviews(skin);
+
+            // Show Modal
+            document.getElementById('skin-modal').classList.remove('hidden');
+        }
+
+        // Render Reviews Inside Modal
+        function renderModalReviews(skin) {
+            const reviewsContainer = document.getElementById('reviews-container');
+            document.getElementById('modal-reviews-count-header').innerText = `${skin.reviews.length} Nhận xét`;
+
+            if (skin.reviews.length === 0) {
+                reviewsContainer.innerHTML = `
+                    <div class="text-center py-6 text-gray-500 text-sm">
+                        Chưa có đánh giá nào cho skin này. Hãy là người đầu tiên để lại nhận xét!
+                    </div>
+                `;
+                return;
+            }
+
+            reviewsContainer.innerHTML = skin.reviews.map(rev => `
+                <div class="bg-valDark p-4 rounded border border-gray-800/80 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 bg-valRed/20 text-valRed font-bold rounded-full flex items-center justify-center text-xs border border-valRed/40">
+                                ${rev.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span class="font-bold text-white text-sm">${rev.name}</span>
+                            <span class="text-xs text-gray-500">• ${rev.date}</span>
+                        </div>
+                        <div class="text-valYellow text-xs flex items-center gap-1">
+                            <span class="font-bold text-sm text-white mr-1">${rev.score}.0</span>
+                            ${renderStarsHtml(rev.score)}
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-300 leading-relaxed">${rev.comment}</p>
+                </div>
+            `).join('');
+        }
+
+        // Handle Review Submission
+        function handleReviewSubmit(e) {
+            e.preventDefault();
+            if (!activeModalSkinId) return;
+
+            const skin = skinsData.find(s => s.id === activeModalSkinId);
+            if (!skin) return;
+
+            const name = document.getElementById('reviewer-name').value.trim();
+            const rating = parseInt(document.getElementById('reviewer-rating').value);
+            const comment = document.getElementById('reviewer-comment').value.trim();
+
+            const vfxInput = parseFloat(document.getElementById('input-vfx').value);
+            const sfxInput = parseFloat(document.getElementById('input-sfx').value);
+            const finInput = parseFloat(document.getElementById('input-finisher').value);
+            const valInput = parseFloat(document.getElementById('input-value').value);
+
+            // Add new review
+            skin.reviews.unshift({
+                name: name,
+                score: rating,
+                date: 'Vừa xong',
+                comment: comment
+            });
+
+            // Recalculate average criteria ratings
+            const count = skin.reviews.length;
+            skin.ratings.vfx = ((skin.ratings.vfx * (count - 1) + vfxInput) / count).toFixed(1);
+            skin.ratings.sfx = ((skin.ratings.sfx * (count - 1) + sfxInput) / count).toFixed(1);
+            skin.ratings.finisher = ((skin.ratings.finisher * (count - 1) + finInput) / count).toFixed(1);
+            skin.ratings.value = ((skin.ratings.value * (count - 1) + valInput) / count).toFixed(1);
+
+            // Reset form
+            document.getElementById('reviewer-name').value = '';
+            document.getElementById('reviewer-comment').value = '';
+
+            // Update UI
+            openSkinModal(activeModalSkinId);
+            renderSkins();
+            renderLeaderboard();
+        }
+
+        // Close Skin Detail Modal
+        function closeSkinModal() {
+            document.getElementById('skin-modal').classList.add('hidden');
+            activeModalSkinId = null;
+        }
+
+        // Open Add Skin Modal
+        function openAddSkinModal() {
+            document.getElementById('add-skin-modal').classList.remove('hidden');
+        }
+
+        // Close Add Skin Modal
+        function closeAddSkinModal() {
+            document.getElementById('add-skin-modal').classList.add('hidden');
+        }
+
+        // Handle Adding New Skin
+        function handleAddNewSkin(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-skin-name').value.trim();
+            const weapon = document.getElementById('new-skin-weapon').value;
+            const tier = document.getElementById('new-skin-tier').value;
+            const price = parseInt(document.getElementById('new-skin-price').value);
+            const image = document.getElementById('new-skin-image').value.trim() || `https://placehold.co/600x300/172430/ece8e1?text=${encodeURIComponent(name)}`;
+
+            const newSkin = {
+                id: name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+                name: name,
+                weapon: weapon,
+                tier: tier,
+                price: price,
+                image: image,
+                ratings: { vfx: 4.5, sfx: 4.5, finisher: 4.5, value: 4.5 },
+                reviews: []
+            };
+
+            skinsData.unshift(newSkin);
+            closeAddSkinModal();
+            renderSkins();
+            renderLeaderboard();
+
+            // Reset input form
+            document.getElementById('new-skin-name').value = '';
+            document.getElementById('new-skin-image').value = '';
+        }
+
+        // Navigation Switcher
+        function switchTab(tab) {
+            const exploreTab = document.getElementById('tab-explore');
+            const leaderboardTab = document.getElementById('tab-leaderboard');
+            
+            const navExplore = document.getElementById('nav-explore');
+            const navLeaderboard = document.getElementById('nav-leaderboard');
+
+            const navExploreM = document.getElementById('nav-explore-m');
+            const navLeaderboardM = document.getElementById('nav-leaderboard-m');
+
+            if (tab === 'explore') {
+                exploreTab.classList.remove('hidden');
+                leaderboardTab.classList.add('hidden');
+
+                navExplore.className = "px-5 py-2 font-bold uppercase text-sm tracking-wider border-b-2 border-valRed text-white flex items-center gap-2 transition";
+                navLeaderboard.className = "px-5 py-2 font-bold uppercase text-sm tracking-wider border-b-2 border-transparent text-gray-400 hover:text-white flex items-center gap-2 transition";
+
+                if (navExploreM) {
+                    navExploreM.className = "flex-1 py-3 text-center font-bold text-xs uppercase tracking-wider text-valRed border-b-2 border-valRed";
+                    navLeaderboardM.className = "flex-1 py-3 text-center font-bold text-xs uppercase tracking-wider text-gray-400";
+                }
+            } else {
+                exploreTab.classList.add('hidden');
+                leaderboardTab.classList.remove('hidden');
+
+                navLeaderboard.className = "px-5 py-2 font-bold uppercase text-sm tracking-wider border-b-2 border-valRed text-white flex items-center gap-2 transition";
+                navExplore.className = "px-5 py-2 font-bold uppercase text-sm tracking-wider border-b-2 border-transparent text-gray-400 hover:text-white flex items-center gap-2 transition";
+
+                if (navLeaderboardM) {
+                    navLeaderboardM.className = "flex-1 py-3 text-center font-bold text-xs uppercase tracking-wider text-valRed border-b-2 border-valRed";
+                    navExploreM.className = "flex-1 py-3 text-center font-bold text-xs uppercase tracking-wider text-gray-400";
+                }
+                renderLeaderboard();
+            }
+        }
+
+        // Quick Filters
+        function quickFilter(type) {
+            if (['Vandal', 'Phantom', 'Melee', 'Operator', 'Sheriff'].includes(type)) {
+                document.getElementById('weapon-filter').value = type;
+            } else {
+                document.getElementById('tier-filter').value = type;
+            }
+            renderSkins();
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('weapon-filter').value = 'ALL';
+            document.getElementById('tier-filter').value = 'ALL';
+            document.getElementById('sort-filter').value = 'rating-desc';
+            renderSkins();
+        }
+
+        // Event Listeners Initialization
+        window.onload = function() {
+            document.getElementById('search-input').addEventListener('input', renderSkins);
+            document.getElementById('weapon-filter').addEventListener('change', renderSkins);
+            document.getElementById('tier-filter').addEventListener('change', renderSkins);
+            document.getElementById('sort-filter').addEventListener('change', renderSkins);
+            document.getElementById('leaderboard-category').addEventListener('change', renderLeaderboard);
+
+            renderSkins();
+        }
+    </script>
+</body>
+</html>
